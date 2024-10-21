@@ -1,17 +1,18 @@
 ﻿using SurveyBasket.API.Core;
 using SurveyBasket.API.DTOs.Polls;
+using SurveyBasket.API.IRepositories;
 using System.Threading;
 
 namespace SurveyBasket.API.Services
 {
     public class PollService : IPollService
     {
-        private readonly SurveyBasketDbContext _surveyBasketDbContext;
+        private readonly IGenericRepository<Poll> _pollRepos;
         private readonly IMapper _mapper;
 
-        public PollService(SurveyBasketDbContext surveyBasketDbContext, IMapper mapper)
+        public PollService(IGenericRepository<Poll> PollRepos, IMapper mapper)
         {
-            _surveyBasketDbContext = surveyBasketDbContext;
+            _pollRepos = PollRepos;
             _mapper = mapper;
         }
 
@@ -20,24 +21,23 @@ namespace SurveyBasket.API.Services
             if (poll is not null)
             {
                 var MappedPoll = _mapper.Map<Poll>(poll);
-                await _surveyBasketDbContext.AddAsync(MappedPoll);
-                var Created = await _surveyBasketDbContext.SaveChangesAsync();
-                if (Created > 0)
+                var CreatedPoll = await _pollRepos.CreateAsync(MappedPoll, cancellationToken);
+                if (CreatedPoll is not null)
                 {
-                    return _mapper.Map<PollsResponse>(Created);
+                    return _mapper.Map<PollsResponse>(CreatedPoll);
                 }
+
             }
             return null;
         }
 
-        public async Task<bool> Delete(int id, CancellationToken cancellationToken)
+        public async Task<bool> DeleteAsync(int id, CancellationToken cancellationToken)
         {
             var GetPoll = await GetByIdAsync(id, cancellationToken);
             if (GetPoll is not null)
             {
                 var MappedPoll = _mapper.Map<Poll>(GetPoll);
-                _surveyBasketDbContext.Remove(MappedPoll);
-                var Deleted = await _surveyBasketDbContext.SaveChangesAsync();
+                var Deleted = await _pollRepos.DeleteAsync(MappedPoll, cancellationToken);
                 if (Deleted > 0)
                 {
                     return true;
@@ -48,17 +48,14 @@ namespace SurveyBasket.API.Services
 
         public async Task<IReadOnlyList<PollsResponse>> GetAsync(CancellationToken cancellationToken)
         {
-            var Polls = await _surveyBasketDbContext.Polls.AsNoTracking().ToListAsync(cancellationToken);
+            var Polls = await _pollRepos.GetAsync(cancellationToken);
             var MappedPolls = _mapper.Map<IReadOnlyList<PollsResponse>>(Polls);
             return MappedPolls;
         }
 
         public async Task<PollsResponse?> GetByIdAsync(int id, CancellationToken cancellationToken)
         {
-            var GetPoll = await _surveyBasketDbContext.Polls
-                .AsNoTracking()
-                .FirstOrDefaultAsync(x => x.Id == id,cancellationToken);
-
+            var GetPoll = await _pollRepos.GetByIdAsync(id, cancellationToken);
             if (GetPoll is not null)
             {
                 var MappedPolls = _mapper.Map<PollsResponse>(GetPoll);
@@ -67,15 +64,28 @@ namespace SurveyBasket.API.Services
             return null;
         }
 
-        public async Task<PollsResponse?> Update(int id, CreatePollsRequest poll, CancellationToken cancellationToken)
+        //public async Task<bool> ToggleIsPublishedAsync(int id, CancellationToken cancellationToken)
+        //{
+        //    var GetPoll = await GetByIdAsync(id, cancellationToken);
+        //    if (GetPoll is not null)
+        //    {
+        //        var Mappedpoll = _mapper.Map<Poll>(GetPoll);
+        //        Mappedpoll.IsPublished = !Mappedpoll.IsPublished;
+        //        var Toggled = await _surveyBasketDbContext.SaveChangesAsync(cancellationToken);
+        //        if (Toggled > 0)
+        //            return true;
+        //    }
+        //    return false;
+        //}
+
+        public async Task<PollsResponse?> UpdateAsync(int id, CreatePollsRequest poll, CancellationToken cancellationToken)
         {
             var GetPoll = await GetByIdAsync(id, cancellationToken);
             if (GetPoll is not null)
             {
                 var MappedPoll = _mapper.Map<Poll>(GetPoll);
-                _surveyBasketDbContext.Update(MappedPoll);
-                var Updated = await _surveyBasketDbContext.SaveChangesAsync();
-                if(Updated > 0)
+                var Updated = await _pollRepos.UpdateAsync(MappedPoll, cancellationToken);
+                if (Updated > 0)
                 {
                     return _mapper.Map<PollsResponse>(MappedPoll);
                 }
