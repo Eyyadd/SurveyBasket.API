@@ -1,0 +1,11 @@
+﻿global using SurveyBasket.API.RegisterService;
+global using Microsoft.EntityFrameworkCore;
+global using SurveyBasket.API.Models;
+global using Microsoft.AspNetCore.Mvc;
+global using SurveyBasket.API.IServices;
+global using FluentValidation;
+global using FluentValidation.AspNetCore;
+global using Mapster;
+global using MapsterMapper;
+global using SurveyBasket.API.Services;
+global using System.Reflection;
