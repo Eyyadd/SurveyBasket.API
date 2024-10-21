@@ -8,7 +8,9 @@ namespace SurveyBasket.API.IServices
         Task<PollsResponse?> GetByIdAsync(int id, CancellationToken cancellationToken);
 
         Task<PollsResponse?> CreateAsync(CreatePollsRequest poll, CancellationToken cancellationToken);
-        Task<PollsResponse?> Update(int id,CreatePollsRequest poll, CancellationToken cancellationToken);
-        Task<bool> Delete(int id, CancellationToken cancellationToken);
+        Task<PollsResponse?> UpdateAsync(int id,CreatePollsRequest poll, CancellationToken cancellationToken);
+        Task<bool> DeleteAsync(int id, CancellationToken cancellationToken);
+
+        //Task<bool> ToggleIsPublishedAsync(int id, CancellationToken cancellationToken);
     }
 }

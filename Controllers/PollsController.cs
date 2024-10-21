@@ -46,7 +46,7 @@ namespace SurveyBasket.API.Controllers
         [HttpDelete("Delete/{id}")]
         public async Task<IActionResult> PollAsync([FromRoute] int id, CancellationToken cancellationToken)
         {
-            var DeletedPoll = await _pollService.Delete(id, cancellationToken);
+            var DeletedPoll = await _pollService.DeleteAsync(id, cancellationToken);
             if (DeletedPoll)
                 return Ok("Deleted Sucessfully");
             return BadRequest("We can't Delete this Entity");
@@ -55,10 +55,19 @@ namespace SurveyBasket.API.Controllers
         [HttpPut("Update/{id}")]
         public IActionResult Polls([FromRoute] int id, [FromBody] CreatePollsRequest NewPoll, CancellationToken cancellationToken)
         {
-            var UpdatedPoll = _pollService.Update(id, NewPoll, cancellationToken);
+            var UpdatedPoll = _pollService.UpdateAsync(id, NewPoll, cancellationToken);
             if (UpdatedPoll is not null)
                 return Ok(UpdatedPoll);
             return BadRequest(UpdatedPoll);
         }
+
+        //[HttpGet("{id}/TogglePublish")]
+        //public async Task<IActionResult> TogglePublished([FromRoute] int id, CancellationToken cancellationToken)
+        //{
+        //    var Toggled= await _pollService.ToggleIsPublishedAsync(id, cancellationToken);
+        //    if(Toggled)
+        //        return Ok(Toggled);
+        //    return BadRequest(Toggled);
+        //}
     }
 }

@@ -1,4 +1,6 @@
 ﻿using SurveyBasket.API.Core;
+using SurveyBasket.API.IRepositories;
+using SurveyBasket.API.Repositories;
 
 namespace SurveyBasket.API.RegisterService
 {
@@ -26,6 +28,7 @@ namespace SurveyBasket.API.RegisterService
         public static IServiceCollection ApplcationService(this IServiceCollection services)
         {
             services.AddScoped(typeof(IPollService), typeof(PollService));
+            services.AddScoped(typeof(IGenericRepository<>),typeof(GenericRepository<>));
 
             return services;
         }
