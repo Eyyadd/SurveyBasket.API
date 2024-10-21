@@ -1,12 +1,14 @@
-﻿namespace SurveyBasket.API.IServices
+﻿using SurveyBasket.API.DTOs.Polls;
+
+namespace SurveyBasket.API.IServices
 {
     public interface IPollService
     {
-        IReadOnlyList<Poll> GetPolls();
-        Poll? GetPollById(int id);
+        Task<IReadOnlyList<PollsResponse>> GetAsync(CancellationToken cancellationToken);
+        Task<PollsResponse?> GetByIdAsync(int id, CancellationToken cancellationToken);
 
-        Poll? AddPoll(Poll poll);
-        Poll? UpdatePoll(Poll poll);
-        void DeletePoll(int id);
+        Task<PollsResponse?> CreateAsync(CreatePollsRequest poll, CancellationToken cancellationToken);
+        Task<PollsResponse?> Update(int id,CreatePollsRequest poll, CancellationToken cancellationToken);
+        Task<bool> Delete(int id, CancellationToken cancellationToken);
     }
 }

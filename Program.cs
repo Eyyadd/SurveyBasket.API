@@ -25,7 +25,7 @@ namespace SurveyBasket.API
             try
             {
                 await dbcontext.Database.MigrateAsync();
-                throw new Exception("test");
+                
             }
             catch (Exception ex)
             {

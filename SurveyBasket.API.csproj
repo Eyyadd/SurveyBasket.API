@@ -20,8 +20,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="MappingMapster\PollsConfig\" />
-    <Folder Include="DTOs\" />
     <Folder Include="Validation\" />
   </ItemGroup>
 

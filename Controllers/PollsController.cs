@@ -1,4 +1,7 @@
 ﻿
+using SurveyBasket.API.DTOs.Polls;
+using System.Threading;
+
 namespace SurveyBasket.API.Controllers
 {
     [Route("api/[controller]")]
@@ -13,36 +16,49 @@ namespace SurveyBasket.API.Controllers
         }
 
         [HttpGet("Get")]
-        public IActionResult Polls()
+        public async Task<IActionResult> Polls(CancellationToken cancellationToken)
         {
-            return Ok(_pollService.GetPolls());
+            var Polls = await _pollService.GetAsync(cancellationToken);
+            if (Polls is not null)
+                return Ok(Polls);
+            return BadRequest();
         }
 
         [HttpGet("GetOne/{id}")]
-        public IActionResult Polls([FromRoute] int id)
+        public async Task<IActionResult> Polls([FromRoute] int id, CancellationToken cancellationToken)
         {
-            return Ok(_pollService.GetPollById(id));
+            var Poll = await _pollService.GetByIdAsync(id, cancellationToken);
+            if (Poll is not null)
+                return Ok(Poll);
+            return BadRequest();
         }
 
-        [HttpPost("Add")]
-        public IActionResult Polls([FromBody] Poll newPoll)
+        [HttpPost("Create")]
+        public async Task<IActionResult> Polls([FromBody] CreatePollsRequest newPoll, CancellationToken cancellationToken)
         {
-            var AddPoll = _pollService.AddPoll(newPoll);
-            return Ok(AddPoll);
+
+            var AddedPoll = await _pollService.CreateAsync(newPoll, cancellationToken);
+            if (AddedPoll is not null)
+                return Ok(AddedPoll);
+            return BadRequest(AddedPoll);
         }
 
         [HttpDelete("Delete/{id}")]
-        public IActionResult Poll([FromRoute] int id)
+        public async Task<IActionResult> PollAsync([FromRoute] int id, CancellationToken cancellationToken)
         {
-            _pollService.DeletePoll(id);
-            return Ok();
+            var DeletedPoll = await _pollService.Delete(id, cancellationToken);
+            if (DeletedPoll)
+                return Ok("Deleted Sucessfully");
+            return BadRequest("We can't Delete this Entity");
         }
 
         [HttpPut("Update/{id}")]
-        public IActionResult Polls([FromRoute]int id,[FromBody] Poll newPoll)
+        public IActionResult Polls([FromRoute] int id, [FromBody] CreatePollsRequest NewPoll, CancellationToken cancellationToken)
         {
-            var AddPoll = _pollService.UpdatePoll(newPoll);
-            return Ok(AddPoll);
+            var UpdatedPoll = _pollService.Update(id, NewPoll, cancellationToken);
+            if (UpdatedPoll is not null)
+                return Ok(UpdatedPoll);
+            return BadRequest(UpdatedPoll);
         }
     }
 }
