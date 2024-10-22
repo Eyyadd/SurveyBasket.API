@@ -35,7 +35,9 @@ namespace SurveyBasket.API.RegisterService
         }
         public static IServiceCollection FluentValidation(this IServiceCollection services)
         {
-            services.AddFluentValidationAutoValidation().AddValidatorsFromAssemblyContaining<Program>();
+            services
+                .AddFluentValidationAutoValidation()
+                .AddValidatorsFromAssemblyContaining<Program>();
 
             return services;
         }

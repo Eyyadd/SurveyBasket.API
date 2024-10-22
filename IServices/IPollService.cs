@@ -12,6 +12,7 @@ namespace SurveyBasket.API.IServices
         Task<bool> DeleteAsync(int id, CancellationToken cancellationToken);
 
         Task<bool> ToggleIsPublishedAsync(int id, CancellationToken cancellationToken);
+        bool TitleIsUnique(string title);
 
     }
 }
