@@ -1,16 +1,14 @@
-﻿using SurveyBasket.API.Core;
-using SurveyBasket.API.DTOs.Polls;
+﻿using SurveyBasket.API.DTOs.Polls;
 using SurveyBasket.API.IRepositories;
-using System.Threading;
 
 namespace SurveyBasket.API.Services
 {
     public class PollService : IPollService
     {
-        private readonly IGenericRepository<Poll> _pollRepos;
+        private readonly IPollsRepo _pollRepos;
         private readonly IMapper _mapper;
 
-        public PollService(IGenericRepository<Poll> PollRepos, IMapper mapper)
+        public PollService(IPollsRepo PollRepos, IMapper mapper)
         {
             _pollRepos = PollRepos;
             _mapper = mapper;
@@ -18,30 +16,21 @@ namespace SurveyBasket.API.Services
 
         public async Task<PollsResponse?> CreateAsync(CreatePollsRequest poll, CancellationToken cancellationToken)
         {
-            if (poll is not null)
-            {
-                var MappedPoll = _mapper.Map<Poll>(poll);
-                var CreatedPoll = await _pollRepos.CreateAsync(MappedPoll, cancellationToken);
-                if (CreatedPoll is not null)
-                {
-                    return _mapper.Map<PollsResponse>(CreatedPoll);
-                }
 
-            }
-            return null;
+            var MappedPoll = _mapper.Map<Poll>(poll);
+            var CreatedPoll = await _pollRepos.CreateAsync(MappedPoll, cancellationToken);
+            return CreatedPoll is not null ? _mapper.Map<PollsResponse>(CreatedPoll) : null;
         }
 
         public async Task<bool> DeleteAsync(int id, CancellationToken cancellationToken)
         {
-            var GetPoll = await GetByIdAsync(id, cancellationToken);
+            var GetPoll = await _pollRepos.GetByIdAsync(id, cancellationToken);
             if (GetPoll is not null)
             {
-                var MappedPoll = _mapper.Map<Poll>(GetPoll);
-                var Deleted = await _pollRepos.DeleteAsync(MappedPoll, cancellationToken);
+                var Deleted = await _pollRepos.DeleteAsync(GetPoll, cancellationToken);
                 if (Deleted > 0)
-                {
                     return true;
-                }
+
             }
             return false;
         }
@@ -64,30 +53,29 @@ namespace SurveyBasket.API.Services
             return null;
         }
 
-        //public async Task<bool> ToggleIsPublishedAsync(int id, CancellationToken cancellationToken)
-        //{
-        //    var GetPoll = await GetByIdAsync(id, cancellationToken);
-        //    if (GetPoll is not null)
-        //    {
-        //        var Mappedpoll = _mapper.Map<Poll>(GetPoll);
-        //        Mappedpoll.IsPublished = !Mappedpoll.IsPublished;
-        //        var Toggled = await _surveyBasketDbContext.SaveChangesAsync(cancellationToken);
-        //        if (Toggled > 0)
-        //            return true;
-        //    }
-        //    return false;
-        //}
+        public async Task<bool> ToggleIsPublishedAsync(int id, CancellationToken cancellationToken)
+        {
+            var IsToggled = false;
+            var GetPoll = await _pollRepos.GetByIdAsync(id, cancellationToken);
+            if (GetPoll is not null)
+            {
+                IsToggled = await _pollRepos.ToggledIsPublishedAsync(GetPoll, cancellationToken);
+            }
+            return IsToggled;
+        }
 
         public async Task<PollsResponse?> UpdateAsync(int id, CreatePollsRequest poll, CancellationToken cancellationToken)
         {
-            var GetPoll = await GetByIdAsync(id, cancellationToken);
+            var GetPoll = await _pollRepos.GetByIdAsync(id, cancellationToken);
             if (GetPoll is not null)
             {
-                var MappedPoll = _mapper.Map<Poll>(GetPoll);
-                var Updated = await _pollRepos.UpdateAsync(MappedPoll, cancellationToken);
+                _pollRepos.DetachedEntity(GetPoll, cancellationToken);
+                var mappedPoll = _mapper.Map<Poll>(poll);
+                mappedPoll.Id = id;
+                var Updated = await _pollRepos.UpdateAsync(mappedPoll, cancellationToken);
                 if (Updated > 0)
                 {
-                    return _mapper.Map<PollsResponse>(MappedPoll);
+                    return _mapper.Map<PollsResponse>(mappedPoll);
                 }
             }
             return null;

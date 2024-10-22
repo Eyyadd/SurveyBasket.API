@@ -5,8 +5,8 @@ namespace SurveyBasket.API.Repositories
 {
     public class GenericRepository<T> : IGenericRepository<T> where T : class
     {
-        private readonly SurveyBasketDbContext _surveyBasketDbContext;
-        private DbSet<T> _set;
+        protected readonly SurveyBasketDbContext _surveyBasketDbContext;
+        protected DbSet<T> _set;
 
         public GenericRepository(SurveyBasketDbContext surveyBasketDbContext)
         {
@@ -17,10 +17,10 @@ namespace SurveyBasket.API.Repositories
 
         public async Task<T?> CreateAsync(T Entity, CancellationToken cancellationToken)
         {
-            await _surveyBasketDbContext.AddAsync(Entity, cancellationToken);
-            var Created = await _surveyBasketDbContext.SaveChangesAsync(cancellationToken);
-            if (Created > 0)
-                return Entity;
+            var CreatedEntity = await _surveyBasketDbContext.AddAsync(Entity, cancellationToken);
+            var CreatedAffected = await _surveyBasketDbContext.SaveChangesAsync(cancellationToken);
+            if (CreatedAffected > 0)
+                return CreatedEntity.Entity;
             return default;
         }
 
@@ -45,9 +45,9 @@ namespace SurveyBasket.API.Repositories
 
         public async Task<int> UpdateAsync(T Entity, CancellationToken cancellationToken)
         {
-            _surveyBasketDbContext.Update(Entity);
-            var Updated = await _surveyBasketDbContext.SaveChangesAsync(cancellationToken);
-            return Updated;
+            var UpdatedEntity = _set.Update(Entity);
+            var UpdatedAffected = await _surveyBasketDbContext.SaveChangesAsync(cancellationToken);
+            return UpdatedAffected;
         }
     }
 }

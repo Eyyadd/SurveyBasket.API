@@ -29,6 +29,7 @@ namespace SurveyBasket.API.RegisterService
         {
             services.AddScoped(typeof(IPollService), typeof(PollService));
             services.AddScoped(typeof(IGenericRepository<>),typeof(GenericRepository<>));
+            services.AddScoped(typeof(IPollsRepo), typeof(PollsRepo));
 
             return services;
         }
