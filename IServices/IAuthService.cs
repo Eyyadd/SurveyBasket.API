@@ -1,7 +1,4 @@
-﻿using SurveyBasket.API.DTOs.Authentication;
-using SurveyBasket.API.Entities;
-
-namespace SurveyBasket.API.IServices
+﻿namespace SurveyBasket.API.IServices
 {
     public interface IAuthService
     {

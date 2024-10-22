@@ -1,7 +1,4 @@
-﻿using SurveyBasket.API.Core;
-using SurveyBasket.API.IRepositories;
-
-namespace SurveyBasket.API.Repositories
+﻿namespace SurveyBasket.API.Repositories
 {
     public class GenericRepository<T> : IGenericRepository<T> where T : class
     {

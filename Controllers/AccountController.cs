@@ -1,8 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using SurveyBasket.API.DTOs.Authentication;
-
-namespace SurveyBasket.API.Controllers
+﻿namespace SurveyBasket.API.Controllers
 {
     [Route("[controller]")]
     [ApiController]
@@ -18,10 +14,10 @@ namespace SurveyBasket.API.Controllers
         [HttpPost("auth/Login")]
         public async Task<IActionResult> Login(LoginRequest request, CancellationToken cancellationToken)
         {
-            var Logged = await _authService.LoginAsync(request.Email, request.Password, cancellationToken);
-            if (Logged != null)
+            var CanLogin = await _authService.LoginAsync(request.Email, request.Password, cancellationToken);
+            if (CanLogin is not null)
             {
-                return Ok(Logged);
+                return Ok(CanLogin);
             }
             return BadRequest("invalid login");
         }

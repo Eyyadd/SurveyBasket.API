@@ -1,10 +1,5 @@
-﻿using Microsoft.IdentityModel.Tokens;
-using SurveyBasket.API.Entities;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
-using SurveyBasket.API.DTOs.Authentication;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.Extensions.Options;
+using SurveyBasket.API.Setting;
 
 namespace SurveyBasket.API.Services
 {
@@ -12,11 +7,13 @@ namespace SurveyBasket.API.Services
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IMapper _mapper;
+        private readonly JwtOptions _jwtOptions;
 
-        public AuthService(UserManager<ApplicationUser> userManager, IMapper mapper)
+        public AuthService(UserManager<ApplicationUser> userManager, IMapper mapper, IOptions<JwtOptions> jwtOptions)
         {
             _userManager = userManager;
             _mapper = mapper;
+            _jwtOptions = jwtOptions.Value;
         }
         private ValidToken CreateToken(ApplicationUser user, CancellationToken cancellationToken)
         {
@@ -30,15 +27,15 @@ namespace SurveyBasket.API.Services
                 new Claim(JwtRegisteredClaimNames.Email,user.Email!),
             };
             //Secrete Key
-            var Key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("EyadMahmoud01020699956@SoftwareEngineer"));
+            var Key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOptions.SecurityKey));
 
             //Registerd Claims
             var Token = new JwtSecurityToken(
-                issuer: "https://localhost:7077",
-                audience: "https://localhost:4200",
+                issuer: _jwtOptions.Issuer,                //"https://localhost:7077",
+                audience:_jwtOptions.Auidence,                                  //"https://localhost:4200",
                 claims: Claims,
                 signingCredentials: new SigningCredentials(Key, SecurityAlgorithms.HmacSha256),
-                expires: DateTime.UtcNow.AddMinutes(30)
+                expires: DateTime.UtcNow.AddMinutes(_jwtOptions.ExpireIn)
                 );
 
 

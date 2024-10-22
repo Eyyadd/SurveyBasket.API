@@ -1,6 +1,4 @@
-﻿using SurveyBasket.API.DTOs.Authentication;
-
-namespace SurveyBasket.API.Validation
+﻿namespace SurveyBasket.API.Validation
 {
     public class LoginUserValidator:AbstractValidator<LoginRequest>
     {

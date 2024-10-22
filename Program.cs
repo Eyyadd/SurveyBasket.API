@@ -1,6 +1,5 @@
-
-using SurveyBasket.API.Core;
-using SurveyBasket.API.Entities;
+using SurveyBasket.API.RegisterService;
+using SurveyBasket.API.Setting;
 
 namespace SurveyBasket.API
 {

@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
-using SurveyBasket.API.Entities;
 
 namespace SurveyBasket.API.Core
 {

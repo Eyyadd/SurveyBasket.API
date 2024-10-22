@@ -1,7 +1,4 @@
-﻿
-using SurveyBasket.API.DTOs.Polls;
-
-namespace SurveyBasket.API.Controllers
+﻿namespace SurveyBasket.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]

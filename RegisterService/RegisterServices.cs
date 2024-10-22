@@ -1,11 +1,5 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.IdentityModel.Tokens;
-using SurveyBasket.API.Core;
-using SurveyBasket.API.Entities;
-using SurveyBasket.API.IRepositories;
-using SurveyBasket.API.Repositories;
-using System.Text;
+﻿using Microsoft.Extensions.Options;
+using SurveyBasket.API.Setting;
 
 namespace SurveyBasket.API.RegisterService
 {
@@ -36,6 +30,8 @@ namespace SurveyBasket.API.RegisterService
             services.AddScoped(typeof(IAuthService), typeof(AuthService));
             services.AddScoped(typeof(IGenericRepository<>),typeof(GenericRepository<>));
             services.AddScoped(typeof(IPollsRepo), typeof(PollsRepo));
+            
+            
 
             return services;
         }
@@ -63,6 +59,9 @@ namespace SurveyBasket.API.RegisterService
                 .GetConnectionString("ApplicationCs") ?? 
                 throw new InvalidOperationException("The Connection String {Application Cs} is not valid");
 
+
+            services.Configure<JwtOptions>(configuration.GetSection("Jwt"));
+            var _jwtOptions = configuration.GetSection("Jwt").Get<JwtOptions>();
             services
                 .AddDbContext<SurveyBasketDbContext>(options =>
                 {
@@ -83,11 +82,11 @@ namespace SurveyBasket.API.RegisterService
                 {
                     ValidateIssuerSigningKey = true,
                     ValidateIssuer = true,
-                    ValidIssuer = configuration["Jwt:Iss"],
+                    ValidIssuer = _jwtOptions?.Issuer,
                     ValidateAudience = true,
-                    ValidAudience = configuration["Jwt:Aud"],
+                    ValidAudience = _jwtOptions?.Auidence,
                     ValidateLifetime = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:SecurityKey"]!))
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOptions?.SecurityKey!))
                 };
             });
 

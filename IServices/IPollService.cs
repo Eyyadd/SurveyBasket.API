@@ -1,6 +1,4 @@
-﻿using SurveyBasket.API.DTOs.Polls;
-
-namespace SurveyBasket.API.IServices
+﻿namespace SurveyBasket.API.IServices
 {
     public interface IPollService
     {

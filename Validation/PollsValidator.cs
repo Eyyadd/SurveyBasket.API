@@ -1,7 +1,4 @@
-﻿
-using SurveyBasket.API.DTOs.Polls;
-
-namespace SurveyBasket.API.Validation
+﻿namespace SurveyBasket.API.Validation
 {
     public class PollsValidator : AbstractValidator<CreatePollsRequest>
     {

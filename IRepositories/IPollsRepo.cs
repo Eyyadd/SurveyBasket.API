@@ -1,6 +1,4 @@
-﻿using SurveyBasket.API.Repositories;
-
-namespace SurveyBasket.API.IRepositories
+﻿namespace SurveyBasket.API.IRepositories
 {
     public interface IPollsRepo : IGenericRepository<Poll>
     {

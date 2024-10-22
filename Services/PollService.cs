@@ -1,7 +1,4 @@
-﻿using SurveyBasket.API.DTOs.Polls;
-using SurveyBasket.API.IRepositories;
-
-namespace SurveyBasket.API.Services
+﻿namespace SurveyBasket.API.Services
 {
     public class PollService : IPollService
     {

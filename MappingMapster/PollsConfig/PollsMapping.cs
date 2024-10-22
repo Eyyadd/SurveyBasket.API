@@ -1,6 +1,4 @@
-﻿using SurveyBasket.API.DTOs.Polls;
-
-namespace SurveyBasket.API.MappingMapster.PollsConfig
+﻿namespace SurveyBasket.API.MappingMapster.PollsConfig
 {
     public class PollsMapping : IRegister
     {
