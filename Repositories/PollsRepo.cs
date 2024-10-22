@@ -11,7 +11,12 @@ namespace SurveyBasket.API.Repositories
 
         public  void DetachedEntity(Poll PollEntity, CancellationToken cancellationToken)
         => _surveyBasketDbContext.Entry(PollEntity).State = EntityState.Detached;
-        
+
+        public bool IsTitleUnique(string title)
+        {
+            var CheckUniquness = _set.Any(x => x.Title == title);
+            return CheckUniquness;
+        }
 
         public async Task<bool> ToggledIsPublishedAsync(Poll ToggleIsPublish, CancellationToken cancellationToken = default)
         {

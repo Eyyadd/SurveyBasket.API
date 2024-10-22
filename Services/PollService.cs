@@ -53,6 +53,10 @@ namespace SurveyBasket.API.Services
             return null;
         }
 
+        public bool TitleIsUnique(string title)
+        =>  _pollRepos.IsTitleUnique(title);
+
+
         public async Task<bool> ToggleIsPublishedAsync(int id, CancellationToken cancellationToken)
         {
             var IsToggled = false;
