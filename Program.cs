@@ -1,5 +1,6 @@
 
 using SurveyBasket.API.Core;
+using SurveyBasket.API.Entities;
 
 namespace SurveyBasket.API
 {
@@ -9,7 +10,6 @@ namespace SurveyBasket.API
         {
             var builder = WebApplication.CreateBuilder(args);
             builder.Services.Services(builder.Configuration);
-
 
             var app = builder.Build();
 
