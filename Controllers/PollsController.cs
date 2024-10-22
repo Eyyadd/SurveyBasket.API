@@ -1,6 +1,5 @@
 ﻿
 using SurveyBasket.API.DTOs.Polls;
-using System.Threading;
 
 namespace SurveyBasket.API.Controllers
 {
@@ -53,21 +52,21 @@ namespace SurveyBasket.API.Controllers
         }
 
         [HttpPut("Update/{id}")]
-        public IActionResult Polls([FromRoute] int id, [FromBody] CreatePollsRequest NewPoll, CancellationToken cancellationToken)
+        public async Task<IActionResult> PollsAsync([FromRoute] int id, [FromBody] CreatePollsRequest NewPoll, CancellationToken cancellationToken)
         {
-            var UpdatedPoll = _pollService.UpdateAsync(id, NewPoll, cancellationToken);
+            var UpdatedPoll = await _pollService.UpdateAsync(id, NewPoll, cancellationToken);
             if (UpdatedPoll is not null)
                 return Ok(UpdatedPoll);
-            return BadRequest(UpdatedPoll);
+            return BadRequest(NewPoll);
         }
 
-        //[HttpGet("{id}/TogglePublish")]
-        //public async Task<IActionResult> TogglePublished([FromRoute] int id, CancellationToken cancellationToken)
-        //{
-        //    var Toggled= await _pollService.ToggleIsPublishedAsync(id, cancellationToken);
-        //    if(Toggled)
-        //        return Ok(Toggled);
-        //    return BadRequest(Toggled);
-        //}
+        [HttpGet("{id}/TogglePublish")]
+        public async Task<IActionResult> TogglePublished([FromRoute] int id, CancellationToken cancellationToken)
+        {
+            var Toggled = await _pollService.ToggleIsPublishedAsync(id, cancellationToken);
+            if (Toggled)
+                return Ok();
+            return BadRequest("Toggle Failed");
+        }
     }
 }
