@@ -12,5 +12,6 @@ namespace SurveyBasket.API.Core
         }
 
         public DbSet<Poll> Polls { get; set; }
+        public DbSet<RefreshToken> RefreshTokens { get; set; }
     }
 }

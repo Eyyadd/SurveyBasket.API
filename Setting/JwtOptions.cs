@@ -2,10 +2,11 @@
 {
     public class JwtOptions
     {
-        public string Issuer {  get; set; }
-        public string Auidence {  get; set; }
-        public string SecurityKey {  get; set; }
-        public int ExpireIn {  get; set; }
+        public string Issuer {  get; set; } =string.Empty;
+        public string Auidence { get; set; } = string.Empty;
+        public string SecurityKey { get; set; } = string.Empty;
+        public int ExpireTokenIn {  get; set; }  
+       
       
     }
 }

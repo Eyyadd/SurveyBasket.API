@@ -55,13 +55,15 @@ namespace SurveyBasket.API.RegisterService
         }
         private static IServiceCollection AddDatabaseConfig(this IServiceCollection services, IConfiguration configuration)
         {
-            var ConnectionString = configuration
-                .GetConnectionString("ApplicationCs") ?? 
-                throw new InvalidOperationException("The Connection String {Application Cs} is not valid");
-
-
             services.Configure<JwtOptions>(configuration.GetSection("Jwt"));
+            services.Configure<RefreshTokenOptions>(configuration.GetSection("RefreshToken"));
             var _jwtOptions = configuration.GetSection("Jwt").Get<JwtOptions>();
+
+            #region Conection String & DataBase
+            var ConnectionString = configuration
+                    .GetConnectionString("ApplicationCs") ??
+                    throw new InvalidOperationException("The Connection String {Application Cs} is not valid");
+
             services
                 .AddDbContext<SurveyBasketDbContext>(options =>
                 {
@@ -69,26 +71,29 @@ namespace SurveyBasket.API.RegisterService
                 });
 
             services.AddIdentity<ApplicationUser, IdentityRole>()
-                .AddEntityFrameworkStores<SurveyBasketDbContext>();
+                .AddEntityFrameworkStores<SurveyBasketDbContext>(); 
+            #endregion
 
+            #region Authentication
             services.AddAuthentication(options =>
-            {
-                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            }).AddJwtBearer(options =>
-            {
-                options.SaveToken = true;
-                options.TokenValidationParameters = new TokenValidationParameters
-                {
-                    ValidateIssuerSigningKey = true,
-                    ValidateIssuer = true,
-                    ValidIssuer = _jwtOptions?.Issuer,
-                    ValidateAudience = true,
-                    ValidAudience = _jwtOptions?.Auidence,
-                    ValidateLifetime = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOptions?.SecurityKey!))
-                };
-            });
+               {
+                   options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                   options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+               }).AddJwtBearer(options =>
+               {
+                   options.SaveToken = true;
+                   options.TokenValidationParameters = new TokenValidationParameters
+                   {
+                       ValidateIssuerSigningKey = true,
+                       ValidateIssuer = true,
+                       ValidIssuer = _jwtOptions?.Issuer,
+                       ValidateAudience = true,
+                       ValidAudience = _jwtOptions?.Auidence,
+                       ValidateLifetime = true,
+                       IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOptions?.SecurityKey!))
+                   };
+               }); 
+            #endregion
 
 
             return services;
