@@ -1,6 +1,6 @@
 ﻿namespace SurveyBasket.API.Models
 {
-    public class Poll
+    public class Poll : AuditLogger
     {
         public int Id { get; set; }
         public string Title { get; set; } = null!;

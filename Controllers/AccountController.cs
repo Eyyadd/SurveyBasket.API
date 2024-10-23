@@ -1,4 +1,5 @@
-﻿namespace SurveyBasket.API.Controllers
+﻿
+namespace SurveyBasket.API.Controllers
 {
     [Route("[controller]")]
     [ApiController]
@@ -31,6 +32,24 @@
                 return Ok(GetRefreshToken);
             }
             return BadRequest("Invalid operation");
+        }
+
+        [HttpPost("auth/RevokeRefreshToken")]
+        public async Task<IActionResult> RevokeRefreshToken(RefreshTokenRequest request, CancellationToken cancellationToken)
+        {
+            var RevokeToken= await _authService.RevokeRefreshToken(request.Token, request.RefreshToken, cancellationToken);
+            if(RevokeToken)
+                return Ok();
+            return BadRequest("Invalid Opreation");
+        }
+
+        [HttpPost("auth/Register")]
+        public async Task<IActionResult> Register(RegistersRequest request,CancellationToken cancellationToken)
+        {
+            var Registerd = await _authService.RegisterAsync(request,cancellationToken);
+            if(Registerd is not null)
+                return Ok(Registerd);
+            return BadRequest("invalid Registeration");
         }
     }
 }

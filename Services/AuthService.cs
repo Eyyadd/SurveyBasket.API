@@ -115,6 +115,47 @@ namespace SurveyBasket.API.Services
             return null;
         }
 
+        public async Task<LoginResponse?> RegisterAsync(RegistersRequest request, CancellationToken cancellationToken)
+        {
+            var user = request.Adapt<ApplicationUser>();
+            var reuslt = await _userManager.CreateAsync(user,request.Password);
+            if (reuslt.Succeeded)
+            {
+                var ValidToken = CreateToken(user, cancellationToken);
+                var refreshToken= GenerateRefreshToken();
+                var Resp = new LoginResponse()
+                {
+                    FirstName = user.FirstName,
+                    LastName = user.LastName,
+                    ValidToken = ValidToken,
+                    RefreshToken = refreshToken,
+                    RefreshTokenExpire = DateTime.UtcNow.AddDays(14)
+                };
+
+                return Resp;
+            }
+            return null;
+        }
+        public async Task<bool> RevokeRefreshToken(string token, string RefreshToken, CancellationToken cancellationToken)
+        {
+            var userId = DecodingToken(token);
+            if (userId is not null)
+            {
+                var user = await _userManager.FindByIdAsync(userId);
+                if (user is not null)
+                {
+                    var refreshToken = user.RefreshTokens.FirstOrDefault(x => x.Token == token && x.IsActive);
+                    if (refreshToken is not null)
+                    {
+                        refreshToken.RevokedAt = DateTime.UtcNow;
+                        await _userManager.UpdateAsync(user);
+                        return true;
+                    }
+                }
+            }
+            return false;
+
+        }
         private static string GenerateRefreshToken()
         {
             var token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
