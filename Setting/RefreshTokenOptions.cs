@@ -2,6 +2,6 @@
 {
     public class RefreshTokenOptions
     {
-        public int ExpireRefreshTokenInDays { get; set; }
+        public int ExpireInDays { get; set; }
     }
 }

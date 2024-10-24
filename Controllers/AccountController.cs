@@ -1,4 +1,6 @@
 ﻿
+using SurveyBasket.API.ErrorsHandling;
+
 namespace SurveyBasket.API.Controllers
 {
     [Route("[controller]")]
@@ -15,41 +17,33 @@ namespace SurveyBasket.API.Controllers
         [HttpPost("auth/Login")]
         public async Task<IActionResult> Login(LoginRequest request, CancellationToken cancellationToken)
         {
-            var CanLogin = await _authService.LoginAsync(request.Email, request.Password, cancellationToken);
-            if (CanLogin is not null)
-            {
-                return Ok(CanLogin);
-            }
-            return BadRequest("invalid login");
+            var result = await _authService.LoginAsync(request.Email, request.Password, cancellationToken);
+            return result.IsSucess ?
+                Ok(result.Value) :
+                Problem(statusCode: StatusCodes.Status401Unauthorized, detail: result.Error.description);
         }
 
         [HttpPost("auth/RefreshToken")]
-        public async Task<IActionResult> RefreshTokenAsync(RefreshTokenRequest request,CancellationToken cancellationToken)
+        public async Task<IActionResult> RefreshTokenAsync(RefreshTokenRequest request, CancellationToken cancellationToken)
         {
-            var GetRefreshToken= await _authService.GetRefreshToken(request.Token, request.RefreshToken, cancellationToken);
-            if (GetRefreshToken is not null)
-            {
-                return Ok(GetRefreshToken);
-            }
-            return BadRequest("Invalid operation");
+            var result = await _authService.GetRefreshToken(request.Token, request.RefreshToken, cancellationToken);
+            return result.IsSucess ?
+            Ok(result.Value) :
+            Problem(statusCode: StatusCodes.Status401Unauthorized, detail: result.Error.description);
         }
 
         [HttpPost("auth/RevokeRefreshToken")]
         public async Task<IActionResult> RevokeRefreshToken(RefreshTokenRequest request, CancellationToken cancellationToken)
         {
-            var RevokeToken= await _authService.RevokeRefreshToken(request.Token, request.RefreshToken, cancellationToken);
-            if(RevokeToken)
-                return Ok();
-            return BadRequest("Invalid Opreation");
+            var result = await _authService.RevokeRefreshToken(request.Token, request.RefreshToken, cancellationToken);
+            return result.IsSucess ? Ok("Revoked") : Problem(statusCode: StatusCodes.Status401Unauthorized, detail: result.Error.description);
         }
 
         [HttpPost("auth/Register")]
-        public async Task<IActionResult> Register(RegistersRequest request,CancellationToken cancellationToken)
+        public async Task<IActionResult> Register(RegistersRequest request, CancellationToken cancellationToken)
         {
-            var Registerd = await _authService.RegisterAsync(request,cancellationToken);
-            if(Registerd is not null)
-                return Ok(Registerd);
-            return BadRequest("invalid Registeration");
+            var result = await _authService.RegisterAsync(request, cancellationToken);
+            return result.IsSucess ? Ok(result.Value) : Problem(statusCode:StatusCodes.Status400BadRequest, detail: result.Error.description);
         }
     }
 }

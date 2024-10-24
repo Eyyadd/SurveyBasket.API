@@ -1,4 +1,6 @@
 ﻿using Microsoft.Extensions.Options;
+using SurveyBasket.API.ErrorsHandling;
+using SurveyBasket.API.ErrorsHandling.CustomErrorMessages;
 using SurveyBasket.API.Setting;
 using System.Security.Cryptography;
 
@@ -22,38 +24,8 @@ namespace SurveyBasket.API.Services
             _refreshTokenOptions = RefreshTokenOptions.Value;
             _jwtOptions = jwtOptions.Value;
         }
-        private ValidToken CreateToken(ApplicationUser user, CancellationToken cancellationToken)
-        {
-            //Private Claims
-            var Claims = new List<Claim>()
-            {
-                new Claim(JwtRegisteredClaimNames.Jti,new Guid().ToString()),
-                new Claim(JwtRegisteredClaimNames.GivenName,user.FirstName),
-                new Claim(JwtRegisteredClaimNames.FamilyName,user.LastName),
-                new Claim(JwtRegisteredClaimNames.NameId,user.Id),
-                new Claim(JwtRegisteredClaimNames.Email,user.Email!),
-            };
-            //Secrete Key
-            var Key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOptions.SecurityKey));
 
-            //Registerd Claims
-            var Token = new JwtSecurityToken(
-                issuer: _jwtOptions.Issuer,                                       //"https://localhost:7077",
-                audience: _jwtOptions.Auidence,                                  //"https://localhost:4200",
-                claims: Claims,
-                signingCredentials: new SigningCredentials(Key, SecurityAlgorithms.HmacSha256),
-                expires: DateTime.UtcNow.AddMinutes(_jwtOptions.ExpireTokenIn)
-                );
-
-
-            var ReturnedToken = new JwtSecurityTokenHandler().WriteToken(Token).ToString();
-
-            return new ValidToken(Token: ReturnedToken, ExpireIn: Token.ValidFrom);
-
-
-        }
-
-        public async Task<LoginResponse?> LoginAsync(string Email, string Password, CancellationToken cancellationToken)
+        public async Task<Result<LoginResponse>> LoginAsync(string Email, string Password, CancellationToken cancellationToken)
         {
             var user = await _userManager.FindByEmailAsync(Email);
             if (user is not null)
@@ -63,7 +35,7 @@ namespace SurveyBasket.API.Services
                 {
                     var CreatedToken = CreateToken(user, cancellationToken);
                     var RefreshToken = GenerateRefreshToken();
-                    var RefreshTokenExpire = DateTime.UtcNow.AddDays(_refreshTokenOptions.ExpireRefreshTokenInDays);
+                    var RefreshTokenExpire = DateTime.UtcNow.AddDays(_refreshTokenOptions.ExpireInDays);
                     user.RefreshTokens.Add(new RefreshToken { Token = RefreshToken, ExpireOn = RefreshTokenExpire });
 
                     var loginResponse = new LoginResponse()
@@ -76,12 +48,13 @@ namespace SurveyBasket.API.Services
                     };
 
                     await _userManager.UpdateAsync(user);
-                    return loginResponse;
+                    return  Result.Success(loginResponse);
                 }
             }
-            return null;
+            
+            return Result.Failure<LoginResponse>(UserErrors.NotFoundUser);
         }
-        public async Task<LoginResponse?> GetRefreshToken(string token, string RefershToken, CancellationToken cancellationToken)
+        public async Task<Result<LoginResponse>> GetRefreshToken(string token, string RefershToken, CancellationToken cancellationToken)
         {
             var userId = DecodingToken(token);
             if (userId is not null)
@@ -95,7 +68,7 @@ namespace SurveyBasket.API.Services
 
                     var NewToken = CreateToken(GetUser, cancellationToken);
                     var NewRefreshToken = GenerateRefreshToken();
-                    var RefreshTokenExpire = DateTime.UtcNow.AddDays(_refreshTokenOptions.ExpireRefreshTokenInDays);
+                    var RefreshTokenExpire = DateTime.UtcNow.AddDays(_refreshTokenOptions.ExpireInDays);
                     GetUser.RefreshTokens.Add(new RefreshToken { Token = NewRefreshToken, ExpireOn = RefreshTokenExpire });
 
                     var loginResponse = new LoginResponse()
@@ -108,14 +81,14 @@ namespace SurveyBasket.API.Services
                     };
 
                     await _userManager.UpdateAsync(GetUser);
-                    return loginResponse;
+                    return Result.Success(loginResponse);
                 }
 
             }
-            return null;
+            return Result.Failure<LoginResponse>(UserErrors.InvalidCredential);
         }
 
-        public async Task<LoginResponse?> RegisterAsync(RegistersRequest request, CancellationToken cancellationToken)
+        public async Task<Result<LoginResponse>> RegisterAsync(RegistersRequest request, CancellationToken cancellationToken)
         {
             var user = request.Adapt<ApplicationUser>();
             var reuslt = await _userManager.CreateAsync(user,request.Password);
@@ -123,20 +96,20 @@ namespace SurveyBasket.API.Services
             {
                 var ValidToken = CreateToken(user, cancellationToken);
                 var refreshToken= GenerateRefreshToken();
-                var Resp = new LoginResponse()
+                var RegisterResponse = new LoginResponse()
                 {
                     FirstName = user.FirstName,
                     LastName = user.LastName,
                     ValidToken = ValidToken,
                     RefreshToken = refreshToken,
-                    RefreshTokenExpire = DateTime.UtcNow.AddDays(14)
+                    RefreshTokenExpire = DateTime.UtcNow.AddDays(value: _refreshTokenOptions.ExpireInDays)
                 };
 
-                return Resp;
+                return Result.Success(RegisterResponse);
             }
-            return null;
+            return Result.Failure<LoginResponse>(UserErrors.RegisertFailure);
         }
-        public async Task<bool> RevokeRefreshToken(string token, string RefreshToken, CancellationToken cancellationToken)
+        public async Task<Result> RevokeRefreshToken(string token, string RefreshToken, CancellationToken cancellationToken)
         {
             var userId = DecodingToken(token);
             if (userId is not null)
@@ -149,11 +122,11 @@ namespace SurveyBasket.API.Services
                     {
                         refreshToken.RevokedAt = DateTime.UtcNow;
                         await _userManager.UpdateAsync(user);
-                        return true;
+                        return Result.Success();
                     }
                 }
             }
-            return false;
+            return Result.Failure(UserErrors.InvalidOperation);
 
         }
         private static string GenerateRefreshToken()
@@ -189,5 +162,35 @@ namespace SurveyBasket.API.Services
             }
         }
 
+        private ValidToken CreateToken(ApplicationUser user, CancellationToken cancellationToken)
+        {
+            //Private Claims
+            var Claims = new List<Claim>()
+            {
+                new Claim(JwtRegisteredClaimNames.Jti,new Guid().ToString()),
+                new Claim(JwtRegisteredClaimNames.GivenName,user.FirstName),
+                new Claim(JwtRegisteredClaimNames.FamilyName,user.LastName),
+                new Claim(JwtRegisteredClaimNames.NameId,user.Id),
+                new Claim(JwtRegisteredClaimNames.Email,user.Email!),
+            };
+            //Secrete Key
+            var Key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOptions.SecurityKey));
+
+            //Registerd Claims
+            var Token = new JwtSecurityToken(
+                issuer: _jwtOptions.Issuer,                                       //"https://localhost:7077",
+                audience: _jwtOptions.Auidence,                                  //"https://localhost:4200",
+                claims: Claims,
+                signingCredentials: new SigningCredentials(Key, SecurityAlgorithms.HmacSha256),
+                expires: DateTime.Now.AddMinutes(_jwtOptions.ExpireTokenIn)
+                );
+
+
+            var ReturnedToken = new JwtSecurityTokenHandler().WriteToken(Token).ToString();
+
+            return new ValidToken(Token: ReturnedToken, ExpireIn: Token.ValidTo);
+
+
+        }
     }
 }
