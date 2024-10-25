@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Options;
+using SurveyBasket.API.ErrorsHandling.Exception_Handling;
 using SurveyBasket.API.Setting;
 
 namespace SurveyBasket.API.RegisterService
@@ -13,6 +14,7 @@ namespace SurveyBasket.API.RegisterService
             services.FluentValidation();
             services.MapsterCongfig();
             services.AddDatabaseConfig(configuration);
+           // services.Exceptions();
             return services;
         }
 
@@ -23,6 +25,12 @@ namespace SurveyBasket.API.RegisterService
 
             return services;
         }
+        public static IServiceCollection Exceptions(this IServiceCollection services)
+        {
+            services.AddExceptionHandler<ExceptionHandler>();
+            services.AddProblemDetails();
+            return services;
+        }
 
         private static IServiceCollection ApplcationService(this IServiceCollection services)
         {
@@ -30,9 +38,6 @@ namespace SurveyBasket.API.RegisterService
             services.AddScoped(typeof(IAuthService), typeof(AuthService));
             services.AddScoped(typeof(IGenericRepository<>),typeof(GenericRepository<>));
             services.AddScoped(typeof(IPollsRepo), typeof(PollsRepo));
-            
-            
-
             return services;
         }
         private static IServiceCollection FluentValidation(this IServiceCollection services)
