@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using SurveyBasket.API.Helper.Extensions;
 
 namespace SurveyBasket.API.Controllers
 {
@@ -18,18 +19,20 @@ namespace SurveyBasket.API.Controllers
         public async Task<IActionResult> Polls(CancellationToken cancellationToken)
         {
             var Polls = await _pollService.GetAsync(cancellationToken);
-            if (Polls is not null)
-                return Ok(Polls);
-            return BadRequest();
+
+            return Polls.IsSucess ?
+                Ok(Polls.Value) :
+                Polls.Problems();
         }
 
         [HttpGet("GetOne/{id}")]
         public async Task<IActionResult> Polls([FromRoute] int id, CancellationToken cancellationToken)
         {
             var Poll = await _pollService.GetByIdAsync(id, cancellationToken);
-            if (Poll is not null)
-                return Ok(Poll);
-            return BadRequest();
+            return Poll.IsSucess ?
+                Ok(Poll.Value) :
+                Poll.Problems();
+
         }
 
         [HttpPost("Create")]
@@ -37,36 +40,36 @@ namespace SurveyBasket.API.Controllers
         {
 
             var AddedPoll = await _pollService.CreateAsync(newPoll, cancellationToken);
-            if (AddedPoll is not null)
-                return Ok(AddedPoll);
-            return BadRequest(AddedPoll);
+            return AddedPoll.IsSucess ?
+                Ok(AddedPoll.Value) :
+                AddedPoll.Problems();
         }
 
         [HttpDelete("Delete/{id}")]
         public async Task<IActionResult> PollAsync([FromRoute] int id, CancellationToken cancellationToken)
         {
             var DeletedPoll = await _pollService.DeleteAsync(id, cancellationToken);
-            if (DeletedPoll)
-                return Ok("Deleted Sucessfully");
-            return BadRequest("We can't Delete this Entity");
+            return DeletedPoll.IsSucess ?
+                Ok("Successfully Deleted") :
+                DeletedPoll.Problems();
         }
 
         [HttpPut("Update/{id}")]
         public async Task<IActionResult> PollsAsync([FromRoute] int id, [FromBody] CreatePollsRequest NewPoll, CancellationToken cancellationToken)
         {
             var UpdatedPoll = await _pollService.UpdateAsync(id, NewPoll, cancellationToken);
-            if (UpdatedPoll is not null)
-                return Ok(UpdatedPoll);
-            return BadRequest(NewPoll);
+            return UpdatedPoll.IsSucess ?
+                Ok(UpdatedPoll.Value) :
+                UpdatedPoll.Problems();
         }
 
         [HttpGet("{id}/TogglePublish")]
         public async Task<IActionResult> TogglePublished([FromRoute] int id, CancellationToken cancellationToken)
         {
             var Toggled = await _pollService.ToggleIsPublishedAsync(id, cancellationToken);
-            if (Toggled)
-                return Ok();
-            return BadRequest("Toggle Failed");
+            return Toggled.IsSucess ? 
+                Ok("Toggled Status Sccessfully"):
+                Toggled.Problems(); 
         }
     }
 }

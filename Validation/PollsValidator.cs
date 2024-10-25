@@ -25,7 +25,7 @@
         private bool BeUnique(string Title)
         {
             var checkUniquness =  _pollService.TitleIsUnique(Title);
-            return !checkUniquness;
+            return checkUniquness.IsSucess ? checkUniquness.IsSucess : !checkUniquness.IsSucess;
         }
 
     }
